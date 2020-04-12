@@ -66,6 +66,10 @@
     <SignManifests>true</SignManifests>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="GG.Configuration, Version=0.20.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\GG.Configuration.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
@@ -94,11 +98,25 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="DirectoryExistsRule.cs" />
+    <Compile Include="File-Properties.xaml.cs">
+      <DependentUpon>File-Properties.xaml</DependentUpon>
+    </Compile>
     <Compile Include="InvertSign.cs" />
     <Compile Include="Resources\BoolToVisibilty.cs" />
+    <Compile Include="Text_Box_File.xaml.cs">
+      <DependentUpon>Text_Box_File.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Text_Box.xaml.cs">
       <DependentUpon>Text_Box.xaml</DependentUpon>
     </Compile>
+    <Page Include="css\Style_File_Organizer.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="File-Properties.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="File_Organizer.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -114,6 +132,10 @@
     <Page Include="Resources\Brushes.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Text_Box_File.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="Text_Box.xaml">
       <SubType>Designer</SubType>
@@ -190,6 +212,31 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\save_icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <COMReference Include="Shell32">
+      <Guid>{50A7E9B0-70EF-11D1-B75A-00A0C90564FE}</Guid>
+      <VersionMajor>1</VersionMajor>
+      <VersionMinor>0</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>tlbimp</WrapperTool>
+      <Isolated>False</Isolated>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </COMReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\file-properties.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\exit.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\file.png" />
+    <Resource Include="Resources\tool.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\copy.png" />
+    <Resource Include="Resources\copy_onhover.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

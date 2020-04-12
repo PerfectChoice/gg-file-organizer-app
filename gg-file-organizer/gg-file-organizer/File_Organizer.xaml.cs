@@ -16,6 +16,10 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using MessageBox = System.Windows.Forms.MessageBox;
+using MessageBoxImage = System.Windows.Forms.MessageBoxIcon;
+using MessageBoxButton = System.Windows.Forms.MessageBoxButtons;
+using MessageBoxResult = System.Windows.Forms.DialogResult;
 
 namespace gg_file_organizer
 {
@@ -84,7 +88,7 @@ namespace gg_file_organizer
 
         #region Enum
 
-        enum stage
+        public enum stage
         {
             [Description("COPY")]
             COPY,
@@ -95,7 +99,7 @@ namespace gg_file_organizer
             [Description("COPYMISSING")]
             COPYMISSING
         }
-        enum FileType
+        public enum FileType
         {
             [Description("Photo")]
             Photo,
@@ -163,9 +167,50 @@ namespace gg_file_organizer
             }
         }
 
-        public static DateTime GetDateTimeFromFile(string path)
+        public static DateTime GetDateTimeFromFile(string path, FileType ft)
         {
-            return File.GetLastWriteTime(path);
+
+            var shellAppType = Type.GetTypeFromProgID("Shell.Application");
+            var oShell = Activator.CreateInstance(shellAppType);
+            var folder = (Shell32.Folder)shellAppType.InvokeMember("NameSpace", System.Reflection.BindingFlags.InvokeMethod, null, oShell, new object[] { System.IO.Path.GetDirectoryName(path) });
+            var file = (Shell32.FolderItem)shellAppType.InvokeMember("ParseName", System.Reflection.BindingFlags.InvokeMethod, null, folder, new object[] { System.IO.Path.GetFileName(path) });
+            //Shell32.Shell shell = new Shell32.Shell();
+            //Shell32.Folder folder = shell.NameSpace(System.IO.Path.GetDirectoryName(path));
+            //Shell32.FolderItem file = folder.ParseName(System.IO.Path.GetFileName(path));
+
+            // These are the characters that are not allowing me to parse into a DateTime
+            char[] charactersToRemove = new char[] {
+                (char)8206,
+                (char)8207
+            };
+
+            int property_id = 0;
+            if (ft == FileType.Photo)
+            {
+                property_id = 12;
+            }
+            else if (ft == FileType.Video)
+            {
+                property_id = 208;
+            }
+            else
+            {
+                property_id = 3;
+            }
+
+            // Getting the "Media Created" label (don't really need this, but what the heck)
+            string name = folder.GetDetailsOf(null, property_id);
+
+            // Getting the "Media Created" value as a string
+            string value = folder.GetDetailsOf(file, property_id).Trim();
+
+            // Removing the suspect characters
+            foreach (char c in charactersToRemove)
+                value = value.Replace((c).ToString(), "").Trim();
+
+            // If the value string is empty, return DateTime.MinValue, otherwise return the "Media Created" date
+            return value == string.Empty ? DateTime.MinValue : DateTime.Parse(value);
+            //return File.GetLastWriteTime(path);
         }
 
         private void CopyPictures(string source, string destination, string foldername)
@@ -247,8 +292,16 @@ namespace gg_file_organizer
                 {
                     FileInfo Fs = new FileInfo(f);
                     //DateTime FileDate = Fs.LastWriteTime;
-                    //DateTime FileDate = GetDateTakenFromImage(f);
-                    DateTime FileDate = GetDateTimeFromFile(f);
+                    DateTime FileDate;
+                    if (fileType == FileType.Photo)
+                    {
+                        FileDate = GetDateTimeFromFile(f, FileType.Photo);
+                    }
+                    else if (fileType == FileType.Video)
+                        FileDate = GetDateTimeFromFile(f, FileType.Video);
+                    else
+                        FileDate = GetDateTimeFromFile(f, FileType.All);
+
                     string foldername = FileDate.ToString("yyyy-MM-dd");
                     string filename = Fs.Name;
                     int percentage = (i + 1) * 100 / sourcefilenames.Count();
@@ -272,7 +325,14 @@ namespace gg_file_organizer
                     FileInfo Fs = new FileInfo(f);
                     //DateTime FileDate = Fs.LastWriteTime;
                     //DateTime FileDate = GetDateTakenFromImage(f);
-                    DateTime FileDate = GetDateTimeFromFile(f);
+                    DateTime FileDate;
+                    if (fileType == FileType.Photo)
+                        FileDate = GetDateTimeFromFile(f, FileType.Photo);
+                    else if (fileType == FileType.Video)
+                        FileDate = GetDateTimeFromFile(f, FileType.Video);
+                    else
+                        FileDate = GetDateTimeFromFile(f, FileType.All);
+
                     string foldername = FileDate.ToString("yyyy-MM-dd");
                     string filename = Fs.Name;
                     int percentage = (i + 1) * 100 / missingfiles.Count();
@@ -314,9 +374,10 @@ namespace gg_file_organizer
                 {
                     string message = "Do you want to copy the Missing Files?";
                     string title = "Copy File Window";
-                    System.Windows.Forms.MessageBoxButtons buttons = System.Windows.Forms.MessageBoxButtons.YesNo;
-                    System.Windows.Forms.DialogResult result = System.Windows.Forms.MessageBox.Show(message, title, buttons);
-                    if (result == System.Windows.Forms.DialogResult.Yes)
+                    MessageBoxButton buttons = MessageBoxButton.YesNo;
+                    MessageBoxImage boxIcon = MessageBoxImage.Warning;
+                    MessageBoxResult result = MessageBox.Show(message, title, buttons,boxIcon);
+                    if (result == MessageBoxResult.Yes)
                     {
                         count = 0;
                         verify_btn.IsEnabled = false;
@@ -359,7 +420,7 @@ namespace gg_file_organizer
             Source_folder_dialog.Description = "Select the path of your source files";
             Source_folder_dialog.ShowNewFolderButton = false;
 
-            System.Windows.Forms.DialogResult result = Source_folder_dialog.ShowDialog();
+            MessageBoxResult result = Source_folder_dialog.ShowDialog();
             if (result.ToString() == "OK")
             {
                 Source_txt.Text = Source_folder_dialog.SelectedPath;
@@ -373,7 +434,7 @@ namespace gg_file_organizer
             System.Windows.Forms.FolderBrowserDialog Destination_folder_dialog = new System.Windows.Forms.FolderBrowserDialog();
             Destination_folder_dialog.Description = "Select the path of your destination files";
 
-            System.Windows.Forms.DialogResult result = Destination_folder_dialog.ShowDialog();
+            MessageBoxResult result = Destination_folder_dialog.ShowDialog();
             if (result.ToString() == "OK")
             {
                 Destination_txt.Text = Destination_folder_dialog.SelectedPath;
@@ -387,12 +448,14 @@ namespace gg_file_organizer
         {
             if(rb_photo.IsChecked == false && rb_video.IsChecked == false && rb_all.IsChecked == false)
             {
-                MessageBox.Show("Please chosse any one file type and retry!!!!");
+                MessageBoxImage boxIcon2 = MessageBoxImage.Warning;
+                MessageBox.Show("Please chosse any one file type and retry!!!!","GG File Organizer",MessageBoxButton.OK,boxIcon2);
                 return;
             }
             if(string.IsNullOrEmpty(Source_txt.Text) || string.IsNullOrEmpty(Destination_txt.Text))
             {
-                MessageBox.Show("Please choose the path before proceding!!!");
+                MessageBoxImage boxIcon2 = MessageBoxImage.Warning;
+                MessageBox.Show("Please choose the path before proceding!!!","GG File Organizer", MessageBoxButton.OK, boxIcon2);
                 return;
             }
 
@@ -414,9 +477,10 @@ namespace gg_file_organizer
                 fileType = FileType.All;
             }
             string title = "File organizer confirmation window";
-            System.Windows.Forms.MessageBoxButtons buttons = System.Windows.Forms.MessageBoxButtons.YesNo;
-            System.Windows.Forms.DialogResult result = System.Windows.Forms.MessageBox.Show(message, title, buttons);
-            if (result == System.Windows.Forms.DialogResult.Yes)
+            MessageBoxButton buttons = MessageBoxButton.YesNo;
+            MessageBoxImage boxIcon = MessageBoxImage.Warning;
+            MessageBoxResult result = MessageBox.Show(message, title, buttons, boxIcon);
+            if (result == MessageBoxResult.Yes)
             {
                 count = 0;
                 verify_btn.IsEnabled = false;
@@ -438,12 +502,14 @@ namespace gg_file_organizer
         {
             if (rb_photo.IsChecked == false && rb_video.IsChecked == false && rb_all.IsChecked == false)
             {
-                MessageBox.Show("Please chosse any one file type and retry!!!!");
+                MessageBoxImage boxIcon3 = MessageBoxImage.Warning;
+                MessageBox.Show("Please chosse any one file type and retry!!!!", "GG File Organizer", MessageBoxButton.OK, boxIcon3);
                 return;
             }
             if (string.IsNullOrEmpty(Source_txt.Text) || string.IsNullOrEmpty(Destination_txt.Text))
             {
-                MessageBox.Show("Please choose the path before proceding!!!");
+                MessageBoxImage boxIcon2 = MessageBoxImage.Warning;
+                MessageBox.Show("Please choose the path before proceding!!!", "GG File Organizer", MessageBoxButton.OK, boxIcon2);
                 return;
             }
             //Alert message to the customer
@@ -464,9 +530,10 @@ namespace gg_file_organizer
                 fileType = FileType.All;
             }
             string title = "File organizer confirmation window";
-            System.Windows.Forms.MessageBoxButtons buttons = System.Windows.Forms.MessageBoxButtons.YesNo;
-            System.Windows.Forms.DialogResult result = System.Windows.Forms.MessageBox.Show(message, title, buttons);
-            if (result == System.Windows.Forms.DialogResult.Yes)
+            MessageBoxButton buttons = MessageBoxButton.YesNo;
+            MessageBoxImage boxIcon = MessageBoxImage.Warning;
+            MessageBoxResult result = MessageBox.Show(message, title, buttons, boxIcon);
+            if (result == MessageBoxResult.Yes)
             {
                 count = 0;
                 missingfiles.Clear();
@@ -509,13 +576,24 @@ namespace gg_file_organizer
             System.Windows.Forms.SaveFileDialog Save_File_dialog = new System.Windows.Forms.SaveFileDialog();
             Save_File_dialog.Title = "Save the Console log to File";
             Save_File_dialog.Filter = "Log(*.log) | *.log";
-            System.Windows.Forms.DialogResult result = Save_File_dialog.ShowDialog();
+            MessageBoxResult result = Save_File_dialog.ShowDialog();
             if (result.ToString() == "OK")
             {
                 string path = Save_File_dialog.FileName;
                 string text = new TextRange(Output_Window.Document.ContentStart, Output_Window.Document.ContentEnd).Text;
                 SaveData(text, path);
             }
+        }
+
+        private void File_propertie_Menu_Click(object sender, RoutedEventArgs e)
+        {
+            File_Properties fp = new File_Properties();
+            fp.ShowDialog();
+        }
+
+        private void Exit_Menu_Click(object sender, RoutedEventArgs e)
+        {
+            this.Close();
         }
     }
 }

@@ -3,95 +3,30 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:gg_file_organizer.Controls" x:Name="root"
+        xmlns:local="clr-namespace:gg_file_organizer"
         xmlns:t="clr-namespace:gg_file_organizer.Tools"
         mc:Ignorable="d"
         Title="GG-FILE-ORGANIZER" Height="528" Width="797" WindowStartupLocation="CenterScreen" ResizeMode="CanMinimize" Icon="Resources/GG_icon.ico">
     <Window.Resources>
-        <Style x:Key="MyButton" TargetType="Button">
-            <Setter Property="OverridesDefaultStyle" Value="True" />
-            <Setter Property="Cursor" Value="Hand" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border Name="border" BorderThickness="0" BorderBrush="Black" Background="{TemplateBinding Background}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Opacity" Value="0.8" />
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-        <Style TargetType="{x:Type RadioButton}" >
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="{x:Type RadioButton}">
-                        <BulletDecorator Background="White" Cursor="Hand">
-                            <BulletDecorator.Bullet>
-                                <Grid Height="16" Width="16">
-                                    <!--Define size of the Bullet-->
-                                    <!--The two borders-->
-                                    <Border Name="RadioOuter" Background="Transparent" BorderBrush="Gainsboro" BorderThickness="2" CornerRadius="2" />
-                                    <Border CornerRadius="0" Margin="4" Name="RadioMark" Background="#FFADADAD" Visibility="Hidden" />
-                                </Grid>
-                            </BulletDecorator.Bullet>
-                            <!--Text element-->
-                            <TextBlock Margin="3,1,0,0" Foreground="#FF3E3E3E" FontFamily="Calibri" FontSize="12">
-                        <ContentPresenter />
-                            </TextBlock>
-                        </BulletDecorator>
-                        <!--If item is checked, trigger the visibility of the mark-->
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsChecked" Value="true">
-                                <!--If item is checked, trigger the visibility of the mark and change the color of the selected bullet into a darker gray for better highlighting-->
-                                <Setter TargetName="RadioMark" Property="Visibility" Value="Visible"/>
-                                <Setter TargetName="RadioOuter" Property="BorderBrush" Value="#FFADADAD" />
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-        <Style TargetType="TextBlock">
-            <Setter Property="Foreground" Value="Gray" />
-            <Setter Property="FontStyle" Value="Italic"/>
-            <Setter Property="FontSize" Value="16" />
-            <Setter Property="HorizontalAlignment" Value="Center" />
-        </Style>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/css/Style_File_Organizer.xaml">
+                </ResourceDictionary>
+                <ResourceDictionary Source="/Resources/Brushes.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
     </Window.Resources>
     <Grid Margin="0,0,0,2">
         <Label x:Name="Source_lbl" Content="Source Path:" HorizontalAlignment="Left" Margin="40,56,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.404,0.507"/>
         <Label x:Name="Destination_lbl" Content="Destination Path:" HorizontalAlignment="Left" Margin="40,92,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.404,0.507"/>
-        <!--<TextBox x:Name="Source_txt" HorizontalAlignment="Left" Height="23" Margin="196,56,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="516"/>-->
-        <local:Text_Box x:Name="Source_txt" Margin="155,50,139,391" Height="23" Width="480">
-            <!--<local:Text_Box.Text>
-                <Binding Path="Text" UpdateSourceTrigger="Explicit" >
-                    <Binding.ValidationRules>
-                        <t:DirectoryExistsRule />
-                    </Binding.ValidationRules>
-                </Binding>
-            </local:Text_Box.Text>-->
-        </local:Text_Box>
-        <!--<TextBox x:Name="Destination_txt" HorizontalAlignment="Left" Height="23" Margin="196,92,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="516"/>-->
-        <local:Text_Box x:Name="Destination_txt" Margin="155,82,139,359" Height="23" Width="480">
-            <!--<local:Text_Box.Text>
-                <Binding Path="Text" UpdateSourceTrigger="Explicit" >
-                    <Binding.ValidationRules>
-                        <t:DirectoryExistsRule />
-                    </Binding.ValidationRules>
-                </Binding>
-            </local:Text_Box.Text>-->
-        </local:Text_Box>
-        <Button x:Name="Source_open_btn" Style="{StaticResource MyButton}" Background="Transparent" BorderBrush="Transparent" HorizontalAlignment="Center" Margin="656,56,103,0" VerticalAlignment="Top" Width="35" Height="23" Click="Source_open_btn_Click">
+        <local:Text_Box x:Name="Source_txt" Margin="155,50,139,391" Height="23" Width="480"/>
+        <local:Text_Box x:Name="Destination_txt" Margin="155,82,139,359" Height="23" Width="480"/>
+        <Button x:Name="Source_open_btn" Style="{StaticResource MyButton}" Background="Transparent" BorderBrush="Transparent" HorizontalAlignment="Center" Margin="656,56,103,0" VerticalAlignment="Top" Width="35" Height="23" Click="Source_open_btn_Click" ToolTip="Click to open the source folder">
             <StackPanel Orientation="Horizontal">
                 <Image Name="F1" Source="Resources/Folder.png" Stretch="Uniform" Height="23" Width="35" MouseEnter="FolderF1_MouseEnter" MouseLeave="FolderF1_MouseLeave" RenderTransformOrigin="0.671,0.5"/>
             </StackPanel>
         </Button>
-        <Button x:Name="Destination_open_btn" Style="{StaticResource MyButton}" Background="Transparent" BorderBrush="Transparent" HorizontalAlignment="Center" Margin="656,92,103,0" VerticalAlignment="Top" Width="35" Height="23" Click="Destination_open_btn_Click">
+        <Button x:Name="Destination_open_btn" Style="{StaticResource MyButton}" Background="Transparent" BorderBrush="Transparent" HorizontalAlignment="Center" Margin="656,92,103,0" VerticalAlignment="Top" Width="35" Height="23" Click="Destination_open_btn_Click" ToolTip="Click to open the destination foler">
             <StackPanel Orientation="Horizontal">
                 <Image Name="F2" Source="Resources/Folder.png" Stretch="Uniform" Height="23" Width="35" MouseEnter="FolderF2_MouseEnter" MouseLeave="FolderF2_MouseLeave"/>
             </StackPanel>
@@ -114,17 +49,49 @@
         </Button>
         <ProgressBar x:Name="Common_Progress_Bar" HorizontalAlignment="Left" Height="27" Margin="50,454,0,0" VerticalAlignment="Top" Width="640"/>
         <Label x:Name="Percentage_lbl" Content="" Background="Transparent" BorderBrush="Transparent" HorizontalAlignment="Left" Margin="358,454,0,0" VerticalAlignment="Top" Height="27" RenderTransformOrigin="0.5,0.407"/>
-        <Button x:Name="Console_Save_btn" Style="{StaticResource MyButton}" Background="Transparent" BorderBrush="Transparent" HorizontalAlignment="Center" Margin="652,146,101,0" VerticalAlignment="Top" Width="35" Height="23" Click="Console_Save_btn_Click">
+        <Button x:Name="Console_Save_btn" Style="{StaticResource MyButton}" Background="Transparent" BorderBrush="Transparent" HorizontalAlignment="Center" Margin="652,146,101,0" VerticalAlignment="Top" Width="35" Height="23" Click="Console_Save_btn_Click" ToolTip="Click to save the log file">
             <StackPanel Orientation="Horizontal">
                 <Image x:Name="Save_img" Source="Resources/Save_icon.png" Stretch="Uniform" Width="35" Height="23" />
             </StackPanel>
         </Button>
-        <RadioButton x:Name="rb_photo" Content="Photos" HorizontalAlignment="Left" Margin="714,261,0,0" VerticalAlignment="Top"/>
-        <RadioButton x:Name="rb_video" Content="Videos" HorizontalAlignment="Left" Margin="714,291,0,0" VerticalAlignment="Top"/>
-        <RadioButton x:Name="rb_all" Content="All" HorizontalAlignment="Left" Margin="714,321,0,0" VerticalAlignment="Top"/>
+        <RadioButton x:Name="rb_photo" Content="Photos"  Style="{StaticResource MyRadioButton}" HorizontalAlignment="Left" Margin="714,261,0,0" VerticalAlignment="Top"/>
+        <RadioButton x:Name="rb_video" Content="Videos" Style="{StaticResource MyRadioButton}" HorizontalAlignment="Left" Margin="714,291,0,0" VerticalAlignment="Top"/>
+        <RadioButton x:Name="rb_all" Content="All" Style="{StaticResource MyRadioButton}" HorizontalAlignment="Left" Margin="714,321,0,0" VerticalAlignment="Top"/>
         <StackPanel HorizontalAlignment="Left" Height="126" Margin="691,230,0,0" VerticalAlignment="Top" Width="100">
             <TextBlock x:Name="txt_FileType" Text="File Type"/>
         </StackPanel>
-
+        <Menu x:Name="menu" HorizontalAlignment="Left" Height="28" VerticalAlignment="Top" Width="791">
+            <Menu.Background>
+                <LinearGradientBrush EndPoint="0,1" StartPoint="0,0">
+                    <GradientStop Color="#f89544" Offset="0"/>
+                    <GradientStop Color="#ffca87" Offset="0.1"/>
+                    <GradientStop Color="#e5c07c" Offset="0.5"/>
+                    <GradientStop Color="#f3a855" Offset="1"/>
+                </LinearGradientBrush>
+            </Menu.Background>
+            <Menu.BitmapEffect>
+                <EmbossBitmapEffect />
+            </Menu.BitmapEffect>
+            <MenuItem Header="_File" FontSize="18" FontStyle="Italic">
+                <MenuItem.Icon>
+                    <Image Source="Resources/file.png"/>
+                </MenuItem.Icon>
+                <MenuItem x:Name="Exit_Menu" Header="_Exit" Click="Exit_Menu_Click" >
+                    <MenuItem.Icon>
+                        <Image Source="Resources/exit.png" />
+                    </MenuItem.Icon>
+                </MenuItem>
+            </MenuItem>
+            <MenuItem Header="_Tools" FontSize="18" FontStyle="Italic">
+                <MenuItem.Icon>
+                    <Image Source="Resources/tool.png"/>
+                </MenuItem.Icon>
+                <MenuItem x:Name="File_propertie_Menu" Header="_File Properties" Click="File_propertie_Menu_Click">
+                    <MenuItem.Icon>
+                        <Image Source="Resources/file-properties.png" />
+                    </MenuItem.Icon>
+                </MenuItem>
+            </MenuItem>
+        </Menu>
     </Grid>
 </Window>

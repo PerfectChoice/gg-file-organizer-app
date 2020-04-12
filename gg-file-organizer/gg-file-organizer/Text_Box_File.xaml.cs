@@ -18,7 +18,7 @@ namespace gg_file_organizer
     /// <summary>
     /// Interaction logic for Text_Box.xaml
     /// </summary>
-    public partial class Text_Box : TextBox
+    public partial class Text_Box_File : TextBox
     {
         Popup Popup { get { return this.Template.FindName("PART_Popup", this) as Popup; } }
         ListBox ItemList { get { return this.Template.FindName("PART_ItemList", this) as ListBox; } }
@@ -30,7 +30,7 @@ namespace gg_file_organizer
 
         private bool _loaded = false;
         string lastPath;
-        public Text_Box()
+        public Text_Box_File()
         {
             InitializeComponent();
         }
@@ -177,8 +177,16 @@ namespace gg_file_organizer
                     {
                         lastPath = Path.GetDirectoryName(this.Text);
                         string[] paths = Lookup(this.Text);
-
+                        FileInfo[] filelist = LookupFiles(this.Text);
                         ItemList.Items.Clear();
+                        // if there are files in the directory then add those files to the list
+                        if (filelist != null)
+                        {
+                            foreach (FileInfo f in filelist)
+                            {
+                                ItemList.Items.Add(f.FullName);
+                            }
+                        }
                         foreach (string path in paths)
                             if (!(String.Equals(path, this.Text, StringComparison.CurrentCultureIgnoreCase)))
                                 ItemList.Items.Add(path);
@@ -220,6 +228,26 @@ namespace gg_file_organizer
             {
             }
             return new string[0];
+        }
+
+        private FileInfo[] LookupFiles(string path)
+        {
+            try
+            {
+                if (Directory.Exists(Path.GetDirectoryName(path)))
+                {
+                    DirectoryInfo lookupFolder = new DirectoryInfo(Path.GetDirectoryName(path));
+                    string searchPattern = "*.*";
+                    if (lookupFolder != null)
+                    {
+                        return lookupFolder.GetFiles(searchPattern, SearchOption.TopDirectoryOnly);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+            }
+            return new FileInfo[0];
         }
     }
 }

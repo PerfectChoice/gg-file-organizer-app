@@ -1,4 +1,4 @@
-﻿<TextBox x:Class="gg_file_organizer.Text_Box"
+﻿<TextBox x:Class="gg_file_organizer.Text_Box_File"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:t="clr-namespace:gg_file_organizer.Tools"         
