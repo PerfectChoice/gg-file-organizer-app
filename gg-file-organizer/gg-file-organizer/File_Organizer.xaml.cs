@@ -93,7 +93,9 @@ namespace gg_file_organizer
             [Description("CLEAR")]
             CLEAR,
             [Description("COPYMISSING")]
-            COPYMISSING
+            COPYMISSING,
+            [Description("DeletePresent")]
+            DELETEPRESENT,
         }
         enum FileType
         {
@@ -109,10 +111,12 @@ namespace gg_file_organizer
         #region Variable and Propertie Declarations
         private int count = 0;
         private List<string> missingfiles = new List<string>();
+        private List<string> Presentfiles = new List<string>();
         private stage current_stage = stage.CLEAR;
         private string SourceFilePath = string.Empty;
         private string DestinationFilePath = string.Empty;
         private FileType fileType = FileType.All;
+        private bool IsDeleteSelected = false;
         #endregion
 
         #region Public Methods
@@ -178,6 +182,12 @@ namespace gg_file_organizer
             File.Copy(source, System.IO.Path.Combine(destination, foldername, fs.Name), true);
         }
 
+        private void DeletePictures(string source)
+        {
+            FileInfo fs = new FileInfo(source);
+            File.Delete(source);
+        }
+
         private void SaveData(string data, string path)
         {
             //Use StreamWriter class.
@@ -224,6 +234,12 @@ namespace gg_file_organizer
                     {
                         missingfiles.Add(Fs.FullName);
                         BGworker_FileApp.ReportProgress(percentage, string.Format("{0}) File Name: {1} not found!!!", count, Fs.FullName));
+                        count++;
+                    }
+                    else
+                    {
+                        Presentfiles.Add(Fs.FullName);
+                        BGworker_FileApp.ReportProgress(percentage, string.Format("{0}) File Name: {1} found!!!", count, Fs.FullName));
                         count++;
                     }
                     System.Threading.Thread.Sleep(50);
@@ -287,6 +303,30 @@ namespace gg_file_organizer
                     i++;
                 }
             }
+            else if(current_stage == stage.DELETEPRESENT)
+            {
+                System.Threading.Thread.Sleep(500);
+                int i = 0;
+                foreach (var f in Presentfiles)
+                {
+                    FileInfo Fs = new FileInfo(f);
+                    //DateTime FileDate = Fs.LastWriteTime;
+                    //DateTime FileDate = GetDateTakenFromImage(f);
+                    DateTime FileDate = GetDateTimeFromFile(f);
+                    string foldername = FileDate.ToString("yyyy-MM-dd");
+                    string filename = Fs.Name;
+                    int percentage = (i + 1) * 100 / Presentfiles.Count();
+                    if (FilePresent(filename, DestinationFilePath))
+                    {
+                        DeletePictures(f);
+                        count++;
+                        BGworker_FileApp.ReportProgress(percentage, string.Format("{1}) File Name: {0}", Fs.FullName, count));
+                    }
+                    BGworker_FileApp.ReportProgress(percentage);
+                    System.Threading.Thread.Sleep(50);
+                    i++;
+                }
+            }
         }
         private void BGworker_FileApp_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
@@ -301,7 +341,7 @@ namespace gg_file_organizer
         }
         private void BGworker_FileApp_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            if(current_stage == stage.VERIFY)
+            if (current_stage == stage.VERIFY)
             {
                 Output_Window.AppendText("\n");
                 Output_Window.AppendText("TOTAL NUMBER OF FILES NOT PRESENT: " + count);
@@ -309,11 +349,46 @@ namespace gg_file_organizer
                 Output_Window.ScrollToEnd();
                 verify_btn.IsEnabled = true;
                 copy_btn.IsEnabled = true;
+                delete_btn.IsEnabled = true;
                 clear_btn.IsEnabled = true;
-                if (missingfiles.Count() > 0)
+                if (!IsDeleteSelected)
                 {
-                    string message = "Do you want to copy the Missing Files?";
-                    string title = "Copy File Window";
+                    if (missingfiles.Count() > 0)
+                    {
+                        string message = "Do you want to copy the Missing Files?";
+                        string title = "Copy File Window";
+                        System.Windows.Forms.MessageBoxButtons buttons = System.Windows.Forms.MessageBoxButtons.YesNo;
+                        System.Windows.Forms.DialogResult result = System.Windows.Forms.MessageBox.Show(message, title, buttons);
+                        if (result == System.Windows.Forms.DialogResult.Yes)
+                        {
+                            count = 0;
+                            verify_btn.IsEnabled = false;
+                            copy_btn.IsEnabled = false;
+                            clear_btn.IsEnabled = false;
+                            delete_btn.IsEnabled = false;
+                            SourceFilePath = Source_txt.Text;
+                            DestinationFilePath = Destination_txt.Text;
+                            Output_Window.AppendText("\n");
+                            Output_Window.AppendText("Starting to copy missing files :)" + "\n");
+                            Output_Window.AppendText("SOURCE FOLDER PATH:\t" + Source_txt.Text + "\n");
+                            Output_Window.AppendText("DESTINATION FOLDER PATH:\t" + Destination_txt.Text + "\n");
+                            current_stage = stage.COPYMISSING;
+                            BGworker_FileApp.RunWorkerAsync();
+                        }
+                        else
+                        {
+                            Output_Window.ScrollToEnd();
+                            verify_btn.IsEnabled = true;
+                            copy_btn.IsEnabled = true;
+                            clear_btn.IsEnabled = true;
+                            delete_btn.IsEnabled = true;
+                        }
+                    }
+                }
+                else
+                {
+                    string message = "Do you want to delete the files which is present?";
+                    string title = "Delete File Window";
                     System.Windows.Forms.MessageBoxButtons buttons = System.Windows.Forms.MessageBoxButtons.YesNo;
                     System.Windows.Forms.DialogResult result = System.Windows.Forms.MessageBox.Show(message, title, buttons);
                     if (result == System.Windows.Forms.DialogResult.Yes)
@@ -322,13 +397,14 @@ namespace gg_file_organizer
                         verify_btn.IsEnabled = false;
                         copy_btn.IsEnabled = false;
                         clear_btn.IsEnabled = false;
+                        delete_btn.IsEnabled = false;
                         SourceFilePath = Source_txt.Text;
                         DestinationFilePath = Destination_txt.Text;
                         Output_Window.AppendText("\n");
-                        Output_Window.AppendText("Starting to copy missing files :)" + "\n");
+                        Output_Window.AppendText("Starting to deleting present files :)" + "\n");
                         Output_Window.AppendText("SOURCE FOLDER PATH:\t" + Source_txt.Text + "\n");
                         Output_Window.AppendText("DESTINATION FOLDER PATH:\t" + Destination_txt.Text + "\n");
-                        current_stage = stage.COPYMISSING;
+                        current_stage = stage.DELETEPRESENT;
                         BGworker_FileApp.RunWorkerAsync();
                     }
                     else
@@ -337,10 +413,11 @@ namespace gg_file_organizer
                         verify_btn.IsEnabled = true;
                         copy_btn.IsEnabled = true;
                         clear_btn.IsEnabled = true;
+                        delete_btn.IsEnabled = true;
                     }
                 }
             }
-            else if(current_stage == stage.COPY || current_stage == stage.COPYMISSING)
+            else if(current_stage == stage.COPY || current_stage == stage.COPYMISSING || current_stage == stage.DELETEPRESENT)
             {
                 Output_Window.AppendText("\n");
                 Output_Window.AppendText("TOTAL NUMBER OF FILES COPIED: " + count);
@@ -348,6 +425,7 @@ namespace gg_file_organizer
                 Output_Window.ScrollToEnd();
                 verify_btn.IsEnabled = true;
                 copy_btn.IsEnabled = true;
+                delete_btn.IsEnabled = true;
                 clear_btn.IsEnabled = true;
             }
         }
@@ -385,6 +463,7 @@ namespace gg_file_organizer
 
         private void Copy_btn_Click(object sender, RoutedEventArgs e)
         {
+            IsDeleteSelected = false;
             if(rb_photo.IsChecked == false && rb_video.IsChecked == false && rb_all.IsChecked == false)
             {
                 MessageBox.Show("Please chosse any one file type and retry!!!!");
@@ -422,6 +501,7 @@ namespace gg_file_organizer
                 verify_btn.IsEnabled = false;
                 copy_btn.IsEnabled = false;
                 clear_btn.IsEnabled = false;
+                delete_btn.IsEnabled = false;
                 SourceFilePath = Source_txt.Text;
                 DestinationFilePath = Destination_txt.Text;
                 Output_Window.Document.Blocks.Clear();
@@ -436,6 +516,7 @@ namespace gg_file_organizer
 
         private void Verify_btn_Click(object sender, RoutedEventArgs e)
         {
+            IsDeleteSelected = false;
             if (rb_photo.IsChecked == false && rb_video.IsChecked == false && rb_all.IsChecked == false)
             {
                 MessageBox.Show("Please chosse any one file type and retry!!!!");
@@ -473,6 +554,7 @@ namespace gg_file_organizer
                 verify_btn.IsEnabled = false;
                 copy_btn.IsEnabled = false;
                 clear_btn.IsEnabled = false;
+                delete_btn.IsEnabled = false;
                 SourceFilePath = Source_txt.Text;
                 DestinationFilePath = Destination_txt.Text;
                 Output_Window.Document.Blocks.Clear();
@@ -488,6 +570,7 @@ namespace gg_file_organizer
 
         private void Clear_btn_Click(object sender, RoutedEventArgs e)
         {
+            IsDeleteSelected = false;
             SourceFilePath = string.Empty;
             Source_txt.Text = string.Empty;
             DestinationFilePath = string.Empty;
@@ -515,6 +598,60 @@ namespace gg_file_organizer
                 string path = Save_File_dialog.FileName;
                 string text = new TextRange(Output_Window.Document.ContentStart, Output_Window.Document.ContentEnd).Text;
                 SaveData(text, path);
+            }
+        }
+
+        private void delete_btn_Click(object sender, RoutedEventArgs e)
+        {
+            IsDeleteSelected = true;
+            if (rb_photo.IsChecked == false && rb_video.IsChecked == false && rb_all.IsChecked == false)
+            {
+                MessageBox.Show("Please chosse any one file type and retry!!!!");
+                return;
+            }
+            if (string.IsNullOrEmpty(Source_txt.Text) || string.IsNullOrEmpty(Destination_txt.Text))
+            {
+                MessageBox.Show("Please choose the path before proceding!!!");
+                return;
+            }
+            //Alert message to the customer
+            string message = string.Empty;
+            if (rb_photo.IsChecked == true)
+            {
+                message = "You have chossen photo organizer. Do you want to proceed";
+                fileType = FileType.Photo;
+            }
+            else if (rb_video.IsChecked == true)
+            {
+                message = "You have chossen video organizer. Do you want to proceed";
+                fileType = FileType.Video;
+            }
+            else
+            {
+                message = "You have chossen file organizer. Do you want to proceed";
+                fileType = FileType.All;
+            }
+            string title = "File organizer confirmation window";
+            System.Windows.Forms.MessageBoxButtons buttons = System.Windows.Forms.MessageBoxButtons.YesNo;
+            System.Windows.Forms.DialogResult result = System.Windows.Forms.MessageBox.Show(message, title, buttons);
+            if (result == System.Windows.Forms.DialogResult.Yes)
+            {
+                count = 0;
+                missingfiles.Clear();
+                verify_btn.IsEnabled = false;
+                copy_btn.IsEnabled = false;
+                clear_btn.IsEnabled = false;
+                delete_btn.IsEnabled = false;
+                SourceFilePath = Source_txt.Text;
+                DestinationFilePath = Destination_txt.Text;
+                Output_Window.Document.Blocks.Clear();
+                Output_Window.AppendText("\t\t\t\t\tWelcome to GG file organizer application");
+                Output_Window.AppendText("\n");
+                Output_Window.AppendText("SOURCE FOLDER PATH:\t" + Source_txt.Text + "\n");
+                Output_Window.AppendText("DESTINATION FOLDER PATH:\t" + Destination_txt.Text + "\n");
+                Output_Window.ScrollToEnd();
+                current_stage = stage.VERIFY;
+                BGworker_FileApp.RunWorkerAsync();
             }
         }
     }

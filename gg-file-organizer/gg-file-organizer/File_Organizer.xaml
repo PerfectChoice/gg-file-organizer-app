@@ -103,13 +103,16 @@
                 </Paragraph>
             </FlowDocument>
         </RichTextBox>
-        <Button x:Name="copy_btn" Style="{StaticResource MyButton}" Background="Transparent" BorderBrush="Transparent" HorizontalAlignment="Left" Margin="154,120,0,0" VerticalAlignment="Top" Width="90" Height="43" Click="Copy_btn_Click">
+        <Button x:Name="copy_btn" Style="{StaticResource MyButton}" Background="Transparent" BorderBrush="Transparent" HorizontalAlignment="Left" Margin="155,120,0,0" VerticalAlignment="Top" Width="90" Height="43" Click="Copy_btn_Click">
             <Image Source="Resources/button_copy.png" RenderTransformOrigin="0.479,-0.306" Height="43" Width="90"/>
         </Button>
         <Button x:Name="verify_btn" Style="{StaticResource MyButton}" Background="Transparent" BorderBrush="Transparent" HorizontalAlignment="Left" Margin="255,120,0,0" VerticalAlignment="Top" Width="90" Height="43" Click="Verify_btn_Click">
             <Image Source="Resources/button_verify.png" RenderTransformOrigin="0.479,-0.306" Height="43" Width="90"/>
         </Button>
-        <Button x:Name="clear_btn" Style="{StaticResource MyButton}" Background="Transparent" BorderBrush="Transparent" HorizontalAlignment="Left" Margin="358,120,0,0" VerticalAlignment="Top" Width="90" Height="43" Click="Clear_btn_Click">
+        <Button x:Name="delete_btn" Style="{StaticResource MyButton}" Background="Transparent" BorderBrush="Transparent" HorizontalAlignment="Left" Margin="355,120,0,0" VerticalAlignment="Top" Width="90" Height="43" Click="delete_btn_Click">
+            <Image Source="Resources/button_delete.png" RenderTransformOrigin="0.479,-0.306" Height="43" Width="90"/>
+        </Button>
+        <Button x:Name="clear_btn" Style="{StaticResource MyButton}" Background="Transparent" BorderBrush="Transparent" HorizontalAlignment="Left" Margin="455,120,0,0" VerticalAlignment="Top" Width="90" Height="43" Click="Clear_btn_Click">
             <Image Source="Resources/button_clear.png" RenderTransformOrigin="0.479,-0.306" Height="43" Width="90"/>
         </Button>
         <ProgressBar x:Name="Common_Progress_Bar" HorizontalAlignment="Left" Height="27" Margin="50,454,0,0" VerticalAlignment="Top" Width="640"/>

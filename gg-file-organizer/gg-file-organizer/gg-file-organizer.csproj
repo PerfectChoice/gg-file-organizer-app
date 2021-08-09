@@ -63,7 +63,7 @@
     <GenerateManifests>true</GenerateManifests>
   </PropertyGroup>
   <PropertyGroup>
-    <SignManifests>true</SignManifests>
+    <SignManifests>false</SignManifests>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -190,6 +190,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\save_icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\button_delete.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
