@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.SqlTypes;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
@@ -170,6 +171,25 @@ namespace gg_file_organizer
         public static DateTime GetDateTimeFromFile(string path)
         {
             return File.GetLastWriteTime(path);
+            //string filename = path;
+            //string pattern = @"(\d{4})(\d{2})(\d{2})";
+
+            //Match match = Regex.Match(filename, pattern);
+            //if (match.Success)
+            //{
+            //    int year = int.Parse(match.Groups[1].Value);
+            //    int month = int.Parse(match.Groups[2].Value);
+            //    int day = int.Parse(match.Groups[3].Value);
+
+            //    DateTime date = new DateTime(year, month, day);
+            //    Console.WriteLine("Parsed Date: " + date.ToString("yyyy-MM-dd"));
+            //    return date;
+            //}
+            //else
+            //{
+            //    Console.WriteLine("Date not found in filename");
+            //    return DateTime.MinValue;
+            //}
         }
 
         private void CopyPictures(string source, string destination, string foldername)
